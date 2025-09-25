@@ -38,7 +38,7 @@ export const ResultsPage = ({
       </div>
 
       <div className="mx-auto relative z-10">
-        {/* Header with celebration animation */}
+        {/* Header */}
           <div className="mb-16 border-emerald-200">
             <h1 className="text-4xl font-bold bg-emerald-600 bg-clip-text text-white mb-3">
               Quiz Complete! 
@@ -53,7 +53,7 @@ export const ResultsPage = ({
             </div>
           </div>
 
-        {/* Enhanced Score Summary with animations */}
+        {/* Enhanced Score Summary */}
         <div className="bg-white/20 rounded-xl shadow-2xl p-8 mb-8 border border-emerald-100">
           <div className="flex items-center gap-3 mb-6 text-white">
             <div className="bg-white/20 p-2 rounded-lg">

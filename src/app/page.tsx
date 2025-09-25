@@ -11,7 +11,6 @@ import { LoginForm } from "@/components/login-form";
 import { QuizSetup } from "@/components/quizSetup";
 import { QuizQuestion } from "@/components/quizQuestion";
 import { ResultsPage } from "@/components/resultPage";
-``;
 import { ResumeQuizModal } from "@/components/resumeQuizModal";
 import { shuffleArray } from "@/lib/shuffle";
 
@@ -34,7 +33,7 @@ const QuizApp = () => {
   // Initialize app
   useEffect(() => {
     const savedSession = localStorage.getItem("session");
-    
+
     if (savedSession) {
       try {
         const session = JSON.parse(savedSession);
@@ -97,7 +96,7 @@ const QuizApp = () => {
 
     const session = {
       username: inputUsername,
-      expiresAt: Date.now() + (1000 * 60 * 30),
+      expiresAt: Date.now() + 1000 * 60 * 30,
     };
     localStorage.setItem("session", JSON.stringify(session));
     setUsername(inputUsername);
@@ -268,7 +267,6 @@ const QuizApp = () => {
           totalWrong: 0,
           averageScore: 0,
           bestScore: 0,
-          streak: 0,
         };
 
     const newStats = {
@@ -287,9 +285,6 @@ const QuizApp = () => {
     };
 
     localStorage.setItem(`userStats_${username}`, JSON.stringify(newStats));
-
-    // Optional: Log stats update for debugging
-    console.log("User stats updated:", newStats);
   };
 
   // Handle Restart
@@ -325,7 +320,7 @@ const QuizApp = () => {
           setQuizSettings(progress.quizSettings);
           setCurrentPage("quiz");
         } else {
-          // Time expired, finish quiz with current answers and update stats
+          // Time expired, finish quiz
           setUsername(progress.username);
           setQuestions(progress.questions);
           finishQuiz(progress.answers);
