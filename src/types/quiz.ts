@@ -1,3 +1,8 @@
+export interface User {
+  username: string
+  password: string
+}
+
 export interface Question {
   category: string
   type: 'multiple' | 'boolean'
@@ -12,7 +17,6 @@ export interface UserAnswer {
   questionIndex: number
   selectedAnswer: string
   correct: boolean
-  timeSpent?: number
 }
 
 export interface QuizProgress {

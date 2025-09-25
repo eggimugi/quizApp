@@ -14,13 +14,19 @@ import { Label } from "@/components/ui/label";
 import { useState, useEffect } from "react";
 
 interface LoginFormProps {
-  onLogin: (username: string) => void;
+  onLogin: (username: string, password: string) => void;
+  onRegister: (username: string, password: string) => void;
 }
 
-export function LoginForm({ onLogin }: LoginFormProps) {
+export function LoginForm({ onLogin, onRegister }: LoginFormProps) {
   const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const [isRegisterMode, setIsRegisterMode] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   useEffect(() => {
     setIsVisible(true);
@@ -28,20 +34,94 @@ export function LoginForm({ onLogin }: LoginFormProps) {
 
   const handleSubmit = async (e?: React.FormEvent | React.KeyboardEvent) => {
     e?.preventDefault();
-    if (username.trim()) {
-      setIsLoading(true);
-      // Simulate loading delay
-      await new Promise((resolve) => setTimeout(resolve, 800));
-      onLogin(username.trim());
-      setIsLoading(false);
+    setError("");
+    setSuccess("");
+
+    // Validasi Form
+    if (!username.trim() || !password.trim()) {
+      setError("Username and password are required");
+      return;
     }
+
+    if (isRegisterMode && !confirmPassword.trim()) {
+      setError("Please confirm your password");
+      return;
+    }
+
+    if (isRegisterMode && password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters long");
+      return;
+    }
+
+    setIsLoading(true);
+
+    // Simulate API delay
+    await new Promise((resolve) => setTimeout(resolve, 800));
+
+    try {
+      // Register
+      if (isRegisterMode) {
+        const users = JSON.parse(localStorage.getItem("users") || "[]");
+        const userExists = users.find(
+          (u: any) => u.username === username.trim()
+        );
+
+        if (userExists) {
+          setError("Username already exists!");
+          setIsLoading(false);
+          return;
+        }
+
+        onRegister(username.trim(), password);
+        setSuccess("Registration successful! Please login.");
+        setIsRegisterMode(false);
+        setPassword("");
+        setConfirmPassword("");
+      } 
+      // Login
+      else {
+        const users = JSON.parse(localStorage.getItem("users") || "[]");
+        const user = users.find(
+          (u: any) => u.username === username.trim() && u.password === password
+        );
+
+        if (!user) {
+          setError("Invalid username or password! Or Create an account first");
+          setIsLoading(false);
+          return;
+        }
+
+        onLogin(username.trim(), password);
+      }
+    } catch (error) {
+      setError("An error occurred. Please try again.");
+    }
+
+    setIsLoading(false);
+  };
+
+  const toggleMode = () => {
+    setIsRegisterMode(!isRegisterMode);
+    setError("");
+    setSuccess("");
+    setPassword("");
+    setConfirmPassword("");
   };
 
   return (
-    <div className={cn("flex flex-col md:flex-row min-h-screen font-jakartaSans overflow-hidden")}>
+    <div
+      className={cn(
+        "flex flex-col md:flex-row min-h-screen font-jakartaSans overflow-hidden"
+      )}
+    >
       {/* Left Side - Welcome Section */}
       <div className="bg-emerald-600 text-white flex-1 flex flex-col p-16 relative overflow-hidden">
-        {/* Animated background elements */}
+        {/* Background elements */}
         <div className="absolute top-0 left-0 w-full h-full opacity-10">
           <div className="absolute top-20 right-16 w-32 h-32 border-8 rounded-full"></div>
           <div className="absolute top-36 left-0 w-60 h-60 border-8 rounded-full"></div>
@@ -49,8 +129,6 @@ export function LoginForm({ onLogin }: LoginFormProps) {
           <div className="hidden absolute bottom-1/2 left-1/2 w-16 h-16 bg-white rounded-full"></div>
           <div className="absolute -bottom-10 left-1/2 w-16 h-16 bg-white rounded-full"></div>
         </div>
-
-        
 
         {/* Logo with entrance animation */}
         <div
@@ -121,7 +199,7 @@ export function LoginForm({ onLogin }: LoginFormProps) {
         </div>
       </div>
 
-      {/* Right Side - Login Card */}
+      {/* Right Side - Login/Register Card */}
       <Card
         className={cn(
           "flex-1 justify-center border-0 shadow-none transition-all duration-1000 ease-out",
@@ -130,10 +208,12 @@ export function LoginForm({ onLogin }: LoginFormProps) {
       >
         <CardHeader className="transition-all duration-700 ease-out animation-delay-400">
           <CardTitle className="text-2xl bg-gradient-to-r from-emerald-600 to-emerald-800 bg-clip-text text-transparent">
-            Login to your account
+            {isRegisterMode ? "Create your account" : "Login to your account"}
           </CardTitle>
           <CardDescription className="text-gray-600">
-            Enter your username below to login to your account
+            {isRegisterMode
+              ? "Enter your details below to create your account"
+              : "Enter your credentials below to login to your account"}
           </CardDescription>
         </CardHeader>
 
@@ -145,6 +225,19 @@ export function LoginForm({ onLogin }: LoginFormProps) {
         >
           <form onSubmit={handleSubmit}>
             <div className="flex flex-col gap-6">
+              {/* Error/Success Messages */}
+              {error && (
+                <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
+                  {error}
+                </div>
+              )}
+              {success && (
+                <div className="p-3 text-sm text-green-600 bg-green-50 border border-green-200 rounded-md">
+                  {success}
+                </div>
+              )}
+
+              {/* Username Field */}
               <div className="grid gap-3">
                 <Label
                   htmlFor="username"
@@ -158,7 +251,6 @@ export function LoginForm({ onLogin }: LoginFormProps) {
                   placeholder="Enter your username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  onKeyPress={(e) => e.key === "Enter" && handleSubmit(e)}
                   className={cn(
                     "transition-all duration-300 ease-in-out",
                     "focus:scale-105 focus:shadow-lg focus:border-emerald-500",
@@ -168,6 +260,57 @@ export function LoginForm({ onLogin }: LoginFormProps) {
                 />
               </div>
 
+              {/* Password Field */}
+              <div className="grid gap-3">
+                <Label
+                  htmlFor="password"
+                  className="text-sm font-medium text-gray-700"
+                >
+                  Password
+                </Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className={cn(
+                    "transition-all duration-300 ease-in-out",
+                    "focus:scale-105 focus:shadow-lg focus:border-emerald-500",
+                    "hover:border-emerald-300"
+                  )}
+                  required
+                />
+              </div>
+
+              {/* Confirm Password Field (Only for Register) */}
+              {isRegisterMode && (
+                <div className="grid gap-3">
+                  <Label
+                    htmlFor="confirmPassword"
+                    className="text-sm font-medium text-gray-700"
+                  >
+                    Confirm Password
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      id="confirmPassword"
+                      type="password"
+                      placeholder="Confirm your password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className={cn(
+                        "transition-all duration-300 ease-in-out",
+                        "focus:scale-105 focus:shadow-lg focus:border-emerald-500",
+                        "hover:border-emerald-300"
+                      )}
+                      required
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Submit Button */}
               <div className="flex flex-col gap-3">
                 <Button
                   type="submit"
@@ -178,14 +321,15 @@ export function LoginForm({ onLogin }: LoginFormProps) {
                     "active:scale-95",
                     isLoading && "animate-pulse"
                   )}
-                  onClick={handleSubmit}
                   disabled={isLoading}
                 >
                   {isLoading ? (
                     <div className="flex items-center gap-2">
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      Logging in...
+                      {isRegisterMode ? "Creating Account..." : "Logging in..."}
                     </div>
+                  ) : isRegisterMode ? (
+                    "Create Account"
                   ) : (
                     "Login"
                   )}
@@ -193,18 +337,22 @@ export function LoginForm({ onLogin }: LoginFormProps) {
               </div>
             </div>
 
+            {/* Toggle between Login/Register */}
             <div className="mt-4 text-center text-sm text-gray-600">
-              Don&apos;t have an account?{" "}
-              <a
-                href="#"
+              {isRegisterMode
+                ? "Already have an account? "
+                : "Don't have an account? "}
+              <button
+                type="button"
+                onClick={toggleMode}
                 className={cn(
                   "underline underline-offset-4 text-emerald-600",
                   "transition-all duration-300 hover:text-emerald-800",
                   "hover:underline-offset-2"
                 )}
               >
-                Sign up
-              </a>
+                {isRegisterMode ? "Login here" : "Sign up"}
+              </button>
             </div>
           </form>
         </CardContent>

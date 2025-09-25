@@ -1,5 +1,5 @@
 import { Question, UserAnswer } from "@/types/quiz";
-import { Trophy, CheckCircle, XCircle, TrendingUp } from "lucide-react";
+import { CheckCircle, XCircle, TrendingUp } from "lucide-react";
 import { decodeHtml } from "@/lib/shuffle";
 
 export const ResultsPage = ({

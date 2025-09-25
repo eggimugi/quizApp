@@ -37,7 +37,6 @@ export const QuizSetup = ({
     totalWrong: 0,
     averageScore: 0,
     bestScore: 0,
-    streak: 0,
   });
 
   const [isVisible, setIsVisible] = useState(false);
@@ -68,7 +67,7 @@ export const QuizSetup = ({
   const handleStartQuiz = async () => {
     setLoading(true);
     try {
-      await onStartQuiz(amount, type, timeLimit, difficulty, category ?? "");
+      await onStartQuiz(amount, type, timeLimit, difficulty, category);
     } finally {
       setLoading(false);
     }
@@ -98,6 +97,7 @@ export const QuizSetup = ({
 
   return (
     <div className="min-h-screen bg-emerald-600 flex flex-col lg:flex-row justify-between gap-10 font-jakartaSans">
+      {/* Left Side */}
       <div className="flex-1 flex flex-col gap-8 p-16 text-white relative">
         {/* Logo with entrance animation */}
         <div
@@ -208,6 +208,7 @@ export const QuizSetup = ({
         </div>
       </div>
 
+      {/* Right Side */}
       <div className="bg-white flex-1 p-16">
         <div className="text-center mb-6">
           <div className="bg-emerald-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
